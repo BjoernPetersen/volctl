@@ -1,5 +1,6 @@
 package net.bjoernpetersen.volctl
 
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -21,6 +22,13 @@ class VolumeControl @JvmOverloads constructor(
 ) {
     init {
         val dllPath = dllLocation.resolve("$dllName.dll")
+
+        try {
+            Files.delete(dllPath)
+        } catch (e: IOException) {
+            // Errors are most likely caused by another instance using it, so we can just ignore it
+        }
+
         if (!Files.exists(dllPath)) {
             this::class.java
                 .getResourceAsStream("/volctl.dll")
