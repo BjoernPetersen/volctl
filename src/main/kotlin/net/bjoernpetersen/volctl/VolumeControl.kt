@@ -4,6 +4,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.Locale
 
 /**
  * Allows master system audio volume access and control.
@@ -18,10 +19,11 @@ import java.nio.file.Paths
 @Suppress("unused")
 class VolumeControl @JvmOverloads constructor(
     dllLocation: Path = getTempDir(),
-    dllName: String = DEFAULT_DLL_NAME
+    dllName: String = getDefaultLibName()
 ) {
     init {
-        val dllPath = dllLocation.resolve("$dllName.dll")
+        val extension = getLibraryExtension()
+        val dllPath = dllLocation.resolve("$dllName.$extension")
 
         try {
             Files.delete(dllPath)
@@ -31,7 +33,7 @@ class VolumeControl @JvmOverloads constructor(
 
         if (!Files.exists(dllPath)) {
             this::class.java
-                .getResourceAsStream("/volctl.dll")
+                .getResourceAsStream("/${getDefaultLibName()}.$extension")
                 .use { input ->
                     Files.newOutputStream(dllPath).use { output -> input.copyTo(output) }
                 }
@@ -59,7 +61,12 @@ class VolumeControl @JvmOverloads constructor(
         const val MIN_VOLUME = 0
         const val MAX_VOLUME = 100
 
-        private const val DEFAULT_DLL_NAME = "volctl"
+        private const val DEFAULT_DLL_NAME_LINUX = "libvolctl"
+        private const val DEFAULT_LIB_NAME_WINDOWS = "volctl"
+
+        private const val EXTENSION_LINUX = "so"
+        private const val EXTENSION_WINDOWS = "dll"
+
         private const val TMP_DIR_PROPERTY_NAME = "java.io.tmpdir"
 
         /**
@@ -70,5 +77,25 @@ class VolumeControl @JvmOverloads constructor(
             val path = System.getProperty(TMP_DIR_PROPERTY_NAME)
             return Paths.get(path)
         }
+
+        /**
+         * Determines whether the current OS is Windows.
+         */
+        @JvmStatic
+        fun isWindows(): Boolean {
+            val osName = System.getProperty("os.name")
+            return "win" in osName.toLowerCase(Locale.US)
+        }
+
+        /**
+         * @return the default library name for the current OS
+         */
+        @JvmStatic
+        fun getDefaultLibName(): String = if (isWindows()) DEFAULT_LIB_NAME_WINDOWS
+        else DEFAULT_DLL_NAME_LINUX
+
+        @JvmStatic
+        private fun getLibraryExtension(): String = if (isWindows()) EXTENSION_WINDOWS
+        else EXTENSION_LINUX
     }
 }

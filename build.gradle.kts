@@ -87,6 +87,9 @@ sourceSets {
             srcDir(files("$rootDir/native/build/Release") {
                 include("*.dll")
             })
+            srcDir(files("$rootDir/native/build") {
+                include("*.so")
+            })
         }
     }
 }

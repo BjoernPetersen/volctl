@@ -12,4 +12,5 @@ endif (WIN32)
 
 if (UNIX)
     add_library(volctl SHARED volctl-alsa.cpp volctl.h)
+    target_link_libraries(volctl -lasound)
 endif (UNIX)
