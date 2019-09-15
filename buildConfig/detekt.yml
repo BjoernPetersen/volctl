@@ -1,0 +1,12 @@
+comments:
+  UndocumentedPublicClass:
+    active: true
+  UndocumentedPublicFunction:
+    active: true
+
+style:
+  ForbiddenComment:
+    values: 'FIXME:,STOPSHIP:'
+
+build:
+  maxIssues: 1
