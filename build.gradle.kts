@@ -75,6 +75,10 @@ tasks {
             include("LICENSE")
         }
     }
+
+    withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
 sourceSets {
@@ -119,6 +123,18 @@ idea {
 
 dependencies {
     implementation(kotlin("stdlib"))
+
+
+    testImplementation(
+        group = "org.junit.jupiter",
+        name = "junit-jupiter-api",
+        version = Lib.JUNIT
+    )
+    testRuntimeOnly(
+        group = "org.junit.jupiter",
+        name = "junit-jupiter-engine",
+        version = Lib.JUNIT
+    )
 }
 
 repositories {
