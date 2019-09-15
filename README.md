@@ -7,7 +7,7 @@ Can also be used from Java.
 
 ## Compatibility
 
-This library is compatible with Java 1.6+.
+This library is compatible with Java 1.8+.
 
 **Note:** volctl is only compatible with Windows for now.
 

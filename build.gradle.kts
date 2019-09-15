@@ -1,5 +1,6 @@
 import com.diffplug.spotless.LineEnding
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("com.diffplug.gradle.spotless") version Plugin.SPOTLESS
@@ -18,7 +19,7 @@ plugins {
 }
 
 group = "com.github.bjoernpetersen"
-version = "1.1.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 
 tasks {
     create<Exec>("generateHeader") {
@@ -68,6 +69,12 @@ tasks {
     val sourcesJar by creating(Jar::class) {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
+    }
+
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
     }
 
     withType<Jar> {
@@ -145,8 +152,8 @@ repositories {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_6
-    targetCompatibility = JavaVersion.VERSION_1_6
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 publishing {
