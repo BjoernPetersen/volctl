@@ -5,4 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(FindJNI)
 include_directories(${JNI_INCLUDE_DIRS})
-add_library(volctl SHARED volctl.cpp volctl.h)
+
+if (WIN32)
+    add_library(volctl SHARED volctl-win.cpp volctl.h)
+endif (WIN32)
+
+if (UNIX)
+    add_library(volctl SHARED volctl-alsa.cpp volctl.h)
+endif (UNIX)
