@@ -8,6 +8,9 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertDoesNotThrow
+import java.net.URLClassLoader
+import java.nio.file.Paths
 
 class VolumeControlTest {
     private val control = VolumeControl()
@@ -29,6 +32,27 @@ class VolumeControlTest {
         dynamicTest("for value $it") {
             control.volume = it
             assertEquals(it, control.volume)
+        }
+    }
+
+    @Test
+    fun `multiple instances`() {
+        repeat(10) {
+            assertDoesNotThrow { VolumeControl() }
+        }
+    }
+
+    @Test
+    fun `multiple instances from multiple class loaders`() {
+        // NOTE: IntelliJ will not update the .class files in that dir, use Gradle for that
+        val url = Paths.get("build/classes/kotlin/main").toUri().toURL()
+        val pickyClassLoader = PickyClassLoader()
+        repeat(10) {
+            val loader = URLClassLoader(arrayOf(url), pickyClassLoader)
+            val volumeControlClass = loader.loadClass(VolumeControl::class.java.name)
+            val getVolume = volumeControlClass.getMethod("getVolume")
+            val instance = assertDoesNotThrow { volumeControlClass.newInstance() }
+            assertDoesNotThrow { getVolume.invoke(instance) }
         }
     }
 
@@ -57,4 +81,17 @@ class VolumeControlTest {
         }
     }
 }
+
+/**
+ * Loads everything using the SystemClassLoader, except for the VolumeControl class.
+ */
+private class PickyClassLoader : ClassLoader(getSystemClassLoader()) {
+    override fun loadClass(name: String, resolve: Boolean): Class<*> {
+        return if (name == CLASS_NAME) throw ClassNotFoundException()
+        else super.loadClass(name, resolve)
+    }
+
+    private companion object {
+        const val CLASS_NAME = "net.bjoernpetersen.volctl.VolumeControl"
+    }
 }
