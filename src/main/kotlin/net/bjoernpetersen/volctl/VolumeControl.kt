@@ -5,6 +5,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * Allows master system audio volume access and control.
@@ -22,24 +25,26 @@ class VolumeControl @JvmOverloads constructor(
     dllName: String = getDefaultLibName()
 ) {
     init {
-        val extension = getLibraryExtension()
-        val dllPath = dllLocation.resolve("$dllName.$extension")
+        initLock.withLock {
+            val extension = getLibraryExtension()
+            val dllPath = dllLocation.resolve("$dllName.$extension")
 
-        try {
-            Files.delete(dllPath)
-        } catch (e: IOException) {
-            // Errors are most likely caused by another instance using it, so we can just ignore it
+            try {
+                Files.delete(dllPath)
+            } catch (e: IOException) {
+                // Errors are most likely caused by another instance using it, so we can just ignore it
+            }
+
+            if (!Files.exists(dllPath)) {
+                this::class.java
+                    .getResourceAsStream("/${getDefaultLibName()}.$extension")
+                    .use { input ->
+                        Files.newOutputStream(dllPath).use { output -> input.copyTo(output) }
+                    }
+            }
+
+            System.load(dllPath.toString())
         }
-
-        if (!Files.exists(dllPath)) {
-            this::class.java
-                .getResourceAsStream("/${getDefaultLibName()}.$extension")
-                .use { input ->
-                    Files.newOutputStream(dllPath).use { output -> input.copyTo(output) }
-                }
-        }
-
-        System.load(dllPath.toString())
     }
 
     /**
@@ -58,6 +63,8 @@ class VolumeControl @JvmOverloads constructor(
     private external fun setVolumeNative(value: Int)
 
     companion object {
+        private val initLock: Lock = ReentrantLock()
+
         const val MIN_VOLUME = 0
         const val MAX_VOLUME = 100
 
