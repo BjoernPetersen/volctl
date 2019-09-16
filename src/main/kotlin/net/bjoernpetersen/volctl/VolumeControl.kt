@@ -1,5 +1,6 @@
 package net.bjoernpetersen.volctl
 
+import net.bjoernpetersen.volctl.VolumeControl.Companion.newInstanceWithClassLoaderSupport
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -16,18 +17,35 @@ import kotlin.concurrent.withLock
  * store an included library file outside of the .jar-file. The location and name of that file can
  * be customized using the constructor parameters.
  *
+ * ## Usage with multiple class loaders
+ *
+ * If you plan to use this class from multiple class loaders, you'll have to set
+ * `supportMultipleClassLoaders` to `true`. If you do that, **every instance will export its own
+ * library file**. These files cannot be deleted by the same JVM that has loaded them.
+ * This workaround is necessary because only one [ClassLoader] is allowed to load a library file.
+ *
+ * **Note:** Java-callers may use the [newInstanceWithClassLoaderSupport] method if they want to
+ * use the default location and name, but enable multiple class loader support.
+ *
  * @param dllLocation the directory to store the native access library in, defaults to temp dir
  * @param dllName the name of the library file without file extension, defaults to "volctl"
+ * @param supportMultipleClassLoaders whether to create library files with different names for each new
+ * instance (see above)
  */
 @Suppress("unused")
 class VolumeControl @JvmOverloads constructor(
     dllLocation: Path = getTempDir(),
-    dllName: String = getDefaultLibName()
+    dllName: String = getDefaultLibName(),
+    supportMultipleClassLoaders: Boolean = false
 ) {
     init {
         initLock.withLock {
             val extension = getLibraryExtension()
-            val dllPath = dllLocation.resolve("$dllName.$extension")
+            val dllPath = if (supportMultipleClassLoaders) {
+                Files.createTempFile(dllLocation, dllName, ".$extension")
+            } else {
+                dllLocation.resolve("$dllName.$extension")
+            }
 
             try {
                 Files.delete(dllPath)
@@ -75,6 +93,20 @@ class VolumeControl @JvmOverloads constructor(
         private const val EXTENSION_WINDOWS = "dll"
 
         private const val TMP_DIR_PROPERTY_NAME = "java.io.tmpdir"
+
+        /**
+         * Java-friendly way to create a VolumeControl instance with defaults except for
+         * `supportMultipleClassLoaders` being true.
+         *
+         * Equivalent to the Kotlin call:
+         *
+         * ```kotlin
+         * VolumeControl(supportMultipleClassLoaders = true)
+         * ```
+         */
+        @JvmStatic
+        fun newInstanceWithClassLoaderSupport(): VolumeControl =
+            VolumeControl(supportMultipleClassLoaders = true)
 
         /**
          * Retrieves the directory for temporary files on the current system.

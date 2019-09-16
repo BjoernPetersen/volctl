@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import java.net.URLClassLoader
+import java.nio.file.Path
 import java.nio.file.Paths
 
 class VolumeControlTest {
@@ -47,11 +48,17 @@ class VolumeControlTest {
         // NOTE: IntelliJ will not update the .class files in that dir, use Gradle for that
         val url = Paths.get("build/classes/kotlin/main").toUri().toURL()
         val pickyClassLoader = PickyClassLoader()
+        val dllLocation = VolumeControl.getTempDir()
+        val dllName = VolumeControl.getDefaultLibName()
         repeat(10) {
             val loader = URLClassLoader(arrayOf(url), pickyClassLoader)
             val volumeControlClass = loader.loadClass(VolumeControl::class.java.name)
+            val constructor = volumeControlClass
+                .getConstructor(Path::class.java, String::class.java, Boolean::class.java)
+            val instance = assertDoesNotThrow {
+                constructor.newInstance(dllLocation, dllName, true)
+            }
             val getVolume = volumeControlClass.getMethod("getVolume")
-            val instance = assertDoesNotThrow { volumeControlClass.newInstance() }
             assertDoesNotThrow { getVolume.invoke(instance) }
         }
     }
