@@ -134,7 +134,6 @@ idea {
 dependencies {
     implementation(kotlin("stdlib"))
 
-
     testImplementation(
         group = "org.junit.jupiter",
         name = "junit-jupiter-api",
