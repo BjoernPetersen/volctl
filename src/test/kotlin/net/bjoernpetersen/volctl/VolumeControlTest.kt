@@ -1,7 +1,9 @@
 package net.bjoernpetersen.volctl
 
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -29,4 +31,30 @@ class VolumeControlTest {
             assertEquals(it, control.volume)
         }
     }
+
+    companion object {
+        private var beforeVolume: Int = 0
+
+        @BeforeAll
+        @JvmStatic
+        fun saveVolume() {
+            try {
+                beforeVolume = VolumeControl().volume
+            } catch (e: Throwable) {
+                // ignore
+            }
+        }
+
+        @AfterAll
+        @JvmStatic
+        fun restoreVolume() {
+            try {
+                VolumeControl().volume = beforeVolume
+
+            } catch (e: Throwable) {
+                // ignore
+            }
+        }
+    }
+}
 }
