@@ -1,41 +1,28 @@
 #include "volctl.h"
 
 #include "cmath"
+#include "atlbase.h"
 #include "combaseapi.h"
 #include "endpointvolume.h"
 #include "mmdeviceapi.h"
 
 const IID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
-const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 const IID IID_IAudioEndpointVolume = __uuidof(IAudioEndpointVolume);
 
-void initialize() {
+CComPtr<IAudioEndpointVolume> getEndpointVolume() {
     CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-}
-
-IMMDeviceEnumerator *getEnumerator() {
-    initialize();
-    IMMDeviceEnumerator *enumerator;
-    CoCreateInstance(
+    CComPtr<IMMDeviceEnumerator> enumerator;
+    enumerator.CoCreateInstance(
             CLSID_MMDeviceEnumerator, nullptr,
-            CLSCTX_ALL, IID_IMMDeviceEnumerator,
-            (void **) &enumerator);
-    return enumerator;
-}
+            CLSCTX_ALL);
 
-IMMDevice *getDefaultDevice() {
-    auto enumerator = getEnumerator();
-    IMMDevice *device;
+    CComPtr<IMMDevice> device;
     enumerator->GetDefaultAudioEndpoint(
             eRender,
             eMultimedia,
             &device);
-    return device;
-}
 
-IAudioEndpointVolume *getEndpointVolume() {
-    auto device = getDefaultDevice();
-    IAudioEndpointVolume *volume;
+    CComPtr<IAudioEndpointVolume> volume;
     device->Activate(
             IID_IAudioEndpointVolume,
             CLSCTX_ALL,
@@ -51,6 +38,7 @@ JNIEXPORT jint JNICALL Java_net_bjoernpetersen_volctl_VolumeControl_getVolumeNat
 
     float result;
     volume->GetMasterVolumeLevelScalar(&result);
+    CoUninitialize();
 
     return lround(result * 100.0);
 }
@@ -60,4 +48,5 @@ JNIEXPORT void JNICALL Java_net_bjoernpetersen_volctl_VolumeControl_setVolumeNat
     auto volume = getEndpointVolume();
     float floatValue = value / 100.0f;
     volume->SetMasterVolumeLevelScalar(floatValue, nullptr);
+    CoUninitialize();
 }
