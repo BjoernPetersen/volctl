@@ -1,8 +1,9 @@
 #include "volctl.h"
 
+#include "cmath"
 #include "combaseapi.h"
-#include "mmdeviceapi.h"
 #include "endpointvolume.h"
+#include "mmdeviceapi.h"
 
 const IID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
@@ -51,7 +52,7 @@ JNIEXPORT jint JNICALL Java_net_bjoernpetersen_volctl_VolumeControl_getVolumeNat
     float result;
     volume->GetMasterVolumeLevelScalar(&result);
 
-    return (int) (result * 100);
+    return lround(result * 100.0);
 }
 
 JNIEXPORT void JNICALL Java_net_bjoernpetersen_volctl_VolumeControl_setVolumeNative
