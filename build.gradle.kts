@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "com.github.bjoernpetersen"
-version = "2.0.2-SNAPSHOT"
+version = "3.0.0-SNAPSHOT"
 
 tasks {
     create<Exec>("generateHeader") {
