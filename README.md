@@ -2,8 +2,7 @@
 
 [![GitHub (pre-)release](https://img.shields.io/github/release/BjoernPetersen/volctl/all.svg)](https://github.com/BjoernPetersen/volctl/releases) [![GitHub license](https://img.shields.io/github/license/BjoernPetersen/volctl.svg)](https://github.com/BjoernPetersen/volctl/blob/master/LICENSE)
 
-A simple Kotlin library providing access to audio volume control on Windows and Linux.
-Can also be used from Java.
+A simple Java library providing access to audio volume control on Windows and Linux.
 
 The library uses native C++ code to directly access the relevant system APIs,
 there are no further dependencies.

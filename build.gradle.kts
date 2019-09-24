@@ -1,17 +1,11 @@
 import com.diffplug.spotless.LineEnding
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("com.diffplug.gradle.spotless") version Plugin.SPOTLESS
-    id("io.gitlab.arturbosch.detekt") version Plugin.DETEKT
 
     id("com.github.ben-manes.versions") version Plugin.VERSIONS
 
-    kotlin("jvm") version Plugin.KOTLIN
     `java-library`
-
-    id("org.jetbrains.dokka") version Plugin.DOKKA
     idea
 
     signing
@@ -23,8 +17,8 @@ version = "3.0.0-SNAPSHOT"
 
 tasks {
     create<Exec>("generateHeader") {
-        dependsOn("compileKotlin")
-        val classpath = "$buildDir/classes/kotlin/main"
+        dependsOn("compileJava")
+        val classpath = "$buildDir/classes/java/main"
         val output = "native/volctl.h"
         setCommandLine(
             "javah",
@@ -47,20 +41,9 @@ tasks {
         setCommandLine("cmake", "--build", "build", "--config", "release")
     }
 
-    "dokka"(DokkaTask::class) {
-        outputFormat = "html"
-        outputDirectory = "$buildDir/kdoc"
-    }
-
-    @Suppress("UNUSED_VARIABLE")
-    val dokkaJavadoc by creating(DokkaTask::class) {
-        outputFormat = "javadoc"
-        outputDirectory = "$buildDir/javadoc"
-    }
-
     @Suppress("UNUSED_VARIABLE")
     val javadocJar by creating(Jar::class) {
-        dependsOn("dokkaJavadoc")
+        dependsOn("javadoc")
         archiveClassifier.set("javadoc")
         from("$buildDir/javadoc")
     }
@@ -69,12 +52,6 @@ tasks {
     val sourcesJar by creating(Jar::class) {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
-    }
-
-    withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "1.8"
-        }
     }
 
     withType<Jar> {
@@ -102,8 +79,11 @@ sourceSets {
 }
 
 spotless {
-    kotlin {
-        ktlint()
+    java {
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        removeUnusedImports()
+        encoding = Charsets.UTF_8
         lineEndings = LineEnding.UNIX
         endWithNewline()
     }
@@ -119,12 +99,6 @@ spotless {
     }
 }
 
-detekt {
-    toolVersion = Plugin.DETEKT
-    config = files("$rootDir/buildConfig/detekt.yml")
-    buildUponDefaultConfig = true
-}
-
 idea {
     module {
         isDownloadJavadoc = true
@@ -132,8 +106,11 @@ idea {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
-
+    compileOnly(
+        group = "org.jetbrains",
+        name = "annotations",
+        version = Lib.NULL_ANNOTATIONS
+    )
     testImplementation(
         group = "org.junit.jupiter",
         name = "junit-jupiter-api",
