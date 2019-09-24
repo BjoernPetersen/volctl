@@ -9,12 +9,17 @@ import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
+import java.io.IOException
 import java.net.URLClassLoader
+import java.nio.file.FileVisitResult
+import java.nio.file.FileVisitor
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.attribute.BasicFileAttributes
 
 class VolumeControlTest {
-    private val control = VolumeControl()
+    private val control = VolumeControl(dllLocation = DIR)
 
     private fun Int.assertValid() {
         assertFalse(this < VolumeControl.MIN_VOLUME)
@@ -27,9 +32,7 @@ class VolumeControlTest {
     }
 
     @TestFactory
-    fun `set works`(): List<DynamicTest> = listOf(
-        0, 10, 58, 90, 100
-    ).map {
+    fun `set works`(): List<DynamicTest> = (0..100).map {
         dynamicTest("for value $it") {
             control.volume = it
             assertEquals(it, control.volume)
@@ -39,7 +42,7 @@ class VolumeControlTest {
     @Test
     fun `multiple instances`() {
         repeat(10) {
-            assertDoesNotThrow { VolumeControl() }
+            assertDoesNotThrow { VolumeControl(dllLocation = DIR) }
         }
     }
 
@@ -48,7 +51,7 @@ class VolumeControlTest {
         // NOTE: IntelliJ will not update the .class files in that dir, use Gradle for that
         val url = Paths.get("build/classes/kotlin/main").toUri().toURL()
         val pickyClassLoader = PickyClassLoader()
-        val dllLocation = VolumeControl.getTempDir()
+        val dllLocation = DIR
         val dllName = VolumeControl.getDefaultLibName()
         repeat(10) {
             val loader = URLClassLoader(arrayOf(url), pickyClassLoader)
@@ -64,13 +67,46 @@ class VolumeControlTest {
     }
 
     companion object {
+        private val control = VolumeControl(dllName = "testRunnerVolCtl")
         private var beforeVolume: Int = 0
+        val DIR: Path = Paths.get("build/tmp/libFiles")
+
+        @BeforeAll
+        @JvmStatic
+        fun cleanDir() {
+            Files.walkFileTree(DIR, object : FileVisitor<Path> {
+                override fun visitFile(file: Path, attrs: BasicFileAttributes?): FileVisitResult {
+                    Files.delete(file)
+                    return FileVisitResult.CONTINUE
+                }
+
+                override fun visitFileFailed(file: Path?, exc: IOException?): FileVisitResult {
+                    return FileVisitResult.TERMINATE
+                }
+
+                override fun preVisitDirectory(
+                    dir: Path?,
+                    attrs: BasicFileAttributes?
+                ): FileVisitResult = FileVisitResult.CONTINUE
+
+                override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+                    if (exc != null) return FileVisitResult.TERMINATE
+                    return try {
+                        Files.delete(dir)
+                        FileVisitResult.CONTINUE
+                    } catch (e: IOException) {
+                        FileVisitResult.TERMINATE
+                    }
+                }
+            })
+            Files.createDirectories(DIR)
+        }
 
         @BeforeAll
         @JvmStatic
         fun saveVolume() {
             try {
-                beforeVolume = VolumeControl().volume
+                beforeVolume = control.volume
             } catch (e: Throwable) {
                 // ignore
             }
@@ -80,7 +116,7 @@ class VolumeControlTest {
         @JvmStatic
         fun restoreVolume() {
             try {
-                VolumeControl().volume = beforeVolume
+                control.volume = beforeVolume
             } catch (e: Throwable) {
                 // ignore
             }
