@@ -67,12 +67,16 @@ tasks {
 sourceSets {
     main {
         resources {
-            srcDir(files("$rootDir/native/build/Release") {
-                include("*.dll")
-            })
-            srcDir(files("$rootDir/native/build") {
-                include("*.so")
-            })
+            srcDir(
+                files("$rootDir/native/build/Release") {
+                    include("*.dll")
+                }
+            )
+            srcDir(
+                files("$rootDir/native/build") {
+                    include("*.so")
+                }
+            )
         }
     }
 }
