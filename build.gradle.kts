@@ -1,9 +1,8 @@
 import com.diffplug.spotless.LineEnding
 
 plugins {
-    id("com.diffplug.gradle.spotless") version Plugin.SPOTLESS
-
-    id("com.github.ben-manes.versions") version Plugin.VERSIONS
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.versions)
 
     `java-library`
     idea
@@ -106,25 +105,13 @@ idea {
 }
 
 dependencies {
-    compileOnly(
-        group = "org.jetbrains",
-        name = "annotations",
-        version = Lib.NULL_ANNOTATIONS
-    )
-    testImplementation(
-        group = "org.junit.jupiter",
-        name = "junit-jupiter-api",
-        version = Lib.JUNIT
-    )
-    testRuntimeOnly(
-        group = "org.junit.jupiter",
-        name = "junit-jupiter-engine",
-        version = Lib.JUNIT
-    )
+    compileOnly(libs.annotations)
+    testImplementation(libs.junit.api)
+    testRuntimeOnly(libs.junit.engine)
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 java {
@@ -161,7 +148,7 @@ publishing {
                     developer {
                         id.set("BjoernPetersen")
                         name.set("Björn Petersen")
-                        email.set("pheasn@gmail.com")
+                        email.set("git@bjoernpetersen.net")
                         url.set("https://github.com/BjoernPetersen")
                     }
                 }

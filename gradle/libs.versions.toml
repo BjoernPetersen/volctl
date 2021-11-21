@@ -1,0 +1,11 @@
+[versions]
+junit = "5.5.2"
+
+[libraries]
+annotations = { module = "org.jetbrains:annotations", version = "17.0.0" }
+junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+
+[plugins]
+spotless = { id = "com.diffplug.spotless", version = "6.0.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.25.0" }
