@@ -57,10 +57,18 @@ tasks {
         from(project.projectDir) {
             include("LICENSE")
         }
+
+        manifest {
+            attributes("Automatic-Module-Name" to "net.bjoernpetersen.volctl")
+        }
     }
 
     withType<Test> {
         useJUnitPlatform()
+    }
+
+    withType<JavaCompile> {
+        options.release.set(8)
     }
 }
 
