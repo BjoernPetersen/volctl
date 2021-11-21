@@ -2,7 +2,6 @@ import com.diffplug.spotless.LineEnding
 
 plugins {
     alias(libs.plugins.spotless)
-    alias(libs.plugins.versions)
 
     `java-library`
     idea
