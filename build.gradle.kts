@@ -21,8 +21,10 @@ tasks {
         setCommandLine(
             "javah",
             "-jni",
-            "-cp", classpath,
-            "-o", output,
+            "-cp",
+            classpath,
+            "-o",
+            output,
             "net.bjoernpetersen.volctl.VolumeControl"
         )
     }
