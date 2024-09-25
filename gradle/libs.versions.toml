@@ -2,7 +2,7 @@
 junit = "5.11.2"
 
 [libraries]
-annotations = { module = "org.jetbrains:annotations", version = "24.1.0" }
+annotations = { module = "org.jetbrains:annotations", version = "25.0.0" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 
