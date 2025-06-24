@@ -1,5 +1,5 @@
 [versions]
-junit = "5.12.2"
+junit = "5.13.2"
 
 [libraries]
 annotations = { module = "org.jetbrains:annotations", version = "26.0.2" }
