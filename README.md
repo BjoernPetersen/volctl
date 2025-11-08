@@ -7,7 +7,9 @@ A simple Java library providing access to audio volume control on Windows and Li
 The library uses native C++ code to directly access the relevant system APIs,
 there are no further dependencies.
 
-**Note: This project is still maintained and will be updated if needed. As this library's scope is very limited and there are no statically-linked dependencies, updates are only required if any issues are reported.**
+## Archival Notice
+
+**WARNING:** This project is no longer maintained.
 
 ## Compatibility
 
